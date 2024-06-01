@@ -2,43 +2,13 @@
 
 Tutor Invoice Manager is a web application designed to help tutors manage their students' invoices efficiently. This application allows tutors to create, manage, and send invoices to their students, track payment statuses, and generate financial reports.
 
-## Mockups
+## Screenshots
 
 <div id="slideshow">
     <img src="static/screenshots/landing_page.JPG" class="slide" style="display: none;">    
     <img src="static/screenshots/add_student.JPG" class="slide" style="display: block;">
     <img src="static/screenshots/invoice_inspector.JPG" class="slide" style="display: none;">
 </div>
-
-<style>
-#slideshow {
-    position: relative;
-    width: 100%;
-    max-width: 600px;
-    margin: auto;
-}
-.slide {
-    position: absolute;
-    width: 100%;
-}
-</style>
-
-<script>
-let currentSlide = 0;
-const slides = document.querySelectorAll('#slideshow .slide');
-
-function showSlide(index) {
-    slides[currentSlide].style.display = 'none';
-    currentSlide = (index + slides.length) % slides.length;
-    slides[currentSlide].style.display = 'block';
-}
-
-function nextSlide() {
-    showSlide(currentSlide + 1);
-}
-
-setInterval(nextSlide, 3000);
-</script>
 
 ## Features
 
