@@ -24,8 +24,8 @@ Tutor Invoice Manager is a web application designed to help tutors manage their 
 
 Before you begin, ensure you have the following installed:
 
-- [Python](https://www.python.org/downloads/) (version X.X.X)
-- [pip](https://pip.pypa.io/en/stable/installation/) (version X.X.X)
+- [Python](https://www.python.org/downloads/) (version 3.1X.X)
+- [pip](https://pip.pypa.io/en/stable/installation/) (version 24.X.X)
 - [SQLite](https://sqlite.org/download.html) (or any other preferred database)
 
 ### Installation
