@@ -1,5 +1,7 @@
 # Tutor Invoice Manager
 
+![Tutor Invoice Manager](static\screenshots\landing_page.JPG)
+
 Tutor Invoice Manager is a web application designed to help tutors manage their students' invoices efficiently. This application allows tutors to create, manage, and send invoices to their students.
 
 ## Features
