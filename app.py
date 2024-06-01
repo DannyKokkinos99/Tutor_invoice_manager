@@ -11,10 +11,6 @@ from emailer import Emailer
 SENDER_EMAIL = "dannykokkinos@outlook.com"
 SENDER_PASSWORD = open("sender_password.txt", 'r', encoding= "UTF-8").read()
 
-app = Flask(__name__)
-app.config["SQLALCHEMY_DATABASE_URI"] = SQLALCHEMY_DATABASE_URI
-app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = SQLALCHEMY_TRACK_MODIFICATIONS
-
 
 def create_app():
     app = Flask(__name__)
@@ -29,7 +25,7 @@ def create_app():
 
 
 app = create_app()
-
+print(f"APP CREATED: {app}")
 
 @app.route("/")
 def index():
