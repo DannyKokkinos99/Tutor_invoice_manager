@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tutoring Portal</title>
+    <!-- Include Tailwind CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.16/dist/tailwind.min.css" rel="stylesheet">
+    <!-- Include htmx library -->
+    <script src="https://unpkg.com/htmx.org@1.9.12" integrity="sha384-ujb1lZYygJmzgSwoxRggbCHcjc0rB2XoQrxeTUQyRjrOnlCoYta87iKBWq3EsdM2" crossorigin="anonymous"></script>
+</head>
+
+<body class="bg-cover bg-center bg-no-repeat" style="background-image: url('static/images/index_3.jpg')">
+    <!-- Hidden element to preload styles -->
+    <div class="hidden">
+        <div class="bg-white text-black rounded-md px-3 py-2 w-full border border-black"></div>
+        <div class="mt-4"></div>
+        <button class="bg-black hover:bg-gray-400 text-white hover:text-gray-800 rounded-md px-6 py-3 w-48 mb-4"></button>
+        <!-- Add any other classes you need to preload here -->
+    </div>
+
+    <div class="bg-cover bg-center h-screen w-screen flex justify-center items-center" id="main">
+        <!-- Button container with background rectangle -->
+        <div class="bg-black bg-opacity-50 p-8 rounded-2xl w-80 flex flex-col items-center justify-center">
+            <button hx-get="/create-invoice-form" hx-target="#main" class="bg-black hover:bg-gray-400 text-white hover:text-gray-800 rounded-2xl px-6 py-3 w-48 mb-6 border-2 border-white">Create Invoice</button>
+            <button hx-get="/add-student" hx-target="#main" class="bg-black hover:bg-gray-400 text-white hover:text-gray-800 rounded-2xl px-6 py-3 w-48 mb-6 border-2 border-white">Add Student</button>
+            <button hx-get="/edit-student" hx-target="#main" class="bg-black hover:bg-gray-400 text-white hover:text-gray-800 rounded-2xl px-6 py-3 w-48 mb-6 border-2 border-white">Edit Student</button>
+            <button hx-get="/remove-student" hx-target="#main" class="bg-black hover:bg-gray-400 text-white hover:text-gray-800 rounded-2xl px-6 py-3 w-48 mb-6 border-2 border-white">Remove Student</button>
+        </div>
+    </div>
+
+</body>
+
+</html>
