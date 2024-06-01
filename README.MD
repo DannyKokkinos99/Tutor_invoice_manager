@@ -1,6 +1,6 @@
 # Tutor Invoice Manager
 
-Tutor Invoice Manager is a web application designed to help tutors manage their students' invoices efficiently. This application allows tutors to create, manage, and send invoices to their students, track payment statuses, and generate financial reports.
+Tutor Invoice Manager is a web application designed to help tutors manage their students' invoices efficiently. This application allows tutors to create, manage, and send invoices to their students. To achieve this I used Flask as my web framework. I then used HTMX and Tailwind on the frontend.
 
 ## Screenshots
 
@@ -26,7 +26,7 @@ Before you begin, ensure you have the following installed:
 
 - [Python](https://www.python.org/downloads/) (version X.X.X)
 - [pip](https://pip.pypa.io/en/stable/installation/) (version X.X.X)
-- [MongoDB](https://www.mongodb.com/) (or any other preferred database)
+- [SQLite](https://sqlite.org/download.html) (or any other preferred database)
 
 ### Installation
 
@@ -51,16 +51,9 @@ Before you begin, ensure you have the following installed:
     ```
 
 4. **Set up environment variables:**
-
-    Create a `.env` file in the root directory and add the following:
-
-    ```env
-    DATABASE_URL=your_database_url
-    SECRET_KEY=your_secret_key
-    EMAIL_SERVICE=your_email_service
-    EMAIL_USER=your_email_user
-    EMAIL_PASS=your_email_password
-    ```
+    1. Create a file called "sender_password.txt" 
+    2. Insert your email password.
+    3. This is used for the automated emailing
 
 5. **Run database migrations (if applicable):**
 
@@ -71,14 +64,7 @@ Before you begin, ensure you have the following installed:
 6. **Start the application:**
 
     ```bash
-    python manage.py runserver
+    python app.py
     ```
 
-    The application will run on `http://localhost:8000`.
-
-### Running Tests
-
-To run tests, use the following command:
-
-```bash
-python -m unittest discover
+    The application will run on `http://localhost:9000`.
