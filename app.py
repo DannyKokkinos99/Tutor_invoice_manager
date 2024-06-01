@@ -8,10 +8,6 @@ from pdf import InvoicePDF
 from emailer import Emailer
 
 
-SENDER_EMAIL = "dannykokkinos@outlook.com"
-SENDER_PASSWORD = open("sender_password.txt", 'r', encoding= "UTF-8").read()
-
-
 def create_app():
     app = Flask(__name__)
     app.config["SECRET_KEY"] = secrets.token_hex(16)
@@ -141,11 +137,13 @@ def serve_pdf():
 
 @app.route('/invoice_send', methods=["POST"])
 def invoice_send():
+    sender_email = "dannykokkinos@outlook.com"
+    sender_password = open("sender_password.txt", 'r', encoding= "UTF-8").read()
     # Send Invoice via email
     if request.method == "POST":
         student_id = int(request.args.get('student_id'))
         student = Student.query.get(student_id)
-        email = Emailer(SENDER_EMAIL,SENDER_PASSWORD)
+        email = Emailer(sender_email,sender_password)
         email.send_email("email_template.txt", student)
         # Increment the counter
         student.invoice_count = student.invoice_count + 1
