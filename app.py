@@ -21,7 +21,6 @@ def create_app():
 
 
 app = create_app()
-print(f"APP CREATED: {app}")
 
 @app.route("/")
 def index():
@@ -127,8 +126,6 @@ def create_invoice_form():
 
 @app.route('/pdf')
 def serve_pdf():
-    print(request.method)
-    print(f"REQUEST ARG: {request.args.get('student_id')}")
     student_id = int(request.args.get('student_id'))
     student = Student.query.get(student_id)
     return send_file(f'Invoices/{student.name}/Invoice-{student.invoice_count}.pdf',
@@ -138,7 +135,7 @@ def serve_pdf():
 @app.route('/invoice_send', methods=["POST"])
 def invoice_send():
     sender_email = "dannykokkinos@outlook.com"
-    sender_password = open("sender_password.txt", 'r', encoding= "UTF-8").read()
+    sender_password = open("senderpassword.txt", 'r', encoding= "UTF-8").read()
     # Send Invoice via email
     if request.method == "POST":
         student_id = int(request.args.get('student_id'))
