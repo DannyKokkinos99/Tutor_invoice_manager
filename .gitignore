@@ -2,3 +2,5 @@ students.db
 Invoices
 smoketest.py
 senderpassword.txt
+.pytest_cache
+__pycache__

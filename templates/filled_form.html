@@ -1,46 +1,49 @@
 <div class="container mx-auto p-4" id="main">
-    <h1 class="text-2xl font-bold mb-4 text-white">Edit Student</h1>
-    <form method="POST">
-        <div class="mb-4">
-            <label for="student_id" class="block mb-2 text-white">Select Student</label>
-            <select  hx-get="/get-student-details" hx-target="#main" id="student_id" name="student_id" class="bg-white text-black rounded-md px-3 py-2 w-full border border-black" required>
-                {% for student_id, student_name in form.student_id.choices %}
-                <option value="{{ student_id }}" {% if student_id == student.id %} selected {% endif %}>
-                    {{ student_name }}
-                </option>
-            {% endfor %}
-            </select>
-        </div>
-        <div class="mb-4">
-            <label for="name" class="block mb-2 text-white">Name</label>
-            <input value= "{{student.name}}" type="text" id="name" name="name" class="bg-white text-black rounded-md px-3 py-2 w-full border border-black" required>
-        </div>
-        <div class="mb-4">
-            <label for="surname" class="block mb-2 text-white">Surname</label>
-            <input value= "{{student.surname}}" type="text" id="surname" name="surname" class="bg-white text-black rounded-md px-3 py-2 w-full border border-black" required>
-        </div>
-        <div class="mb-4">
-            <label for="parent" class="block mb-2 text-white">Parent</label>
-            <input value= "{{student.parent}}" type="text" class="bg-white text-black rounded-md px-3 py-2 w-full border border-black" id="parent" name="parent" required>
-        </div>
-        <div class="mb-4">
-            <label for="email" class="block mb-2 text-white">Email</label>
-            <input value= "{{student.email}}" type="text" id="email" name="email" class="bg-white text-black rounded-md px-3 py-2 w-full border border-black" required>
-        </div>
-        <div class="mb-4">
-            <label for="address" class="block mb-2 text-white">Address</label>
-            <input value= "{{ student.address }}" type="text" id="address" name="address" class="bg-white text-black rounded-md px-3 py-2 w-full border border-black" required>
-        </div>
-        <div class="mb-4">
-            <label for="phone_number" class="block mb-2 text-white">Phone Number</label>
-            <input value= "{{student.phone_number}}" type="text" id="phone_number" name="phone_number" class="bg-white text-black rounded-md px-3 py-2 w-full border border-black" required>
-        </div>
-        <div class="mb-4">
-            <label for="price_per_hour {£}" class="block mb-2 text-white">Price per Hour</label>
-            <input value= "{{student.price_per_hour}}" type="text" id="price_per_hour" name="price_per_hour" class="bg-white text-black rounded-md px-3 py-2 w-full border border-black" required>
-        </div>
-        <button hx-post="/edit-student" hx-target="#main" class="bg-blue-500 hover:bg-blue-700 text-white rounded-md px-4 py-2">Edit</button>
-        <button hx-get="/" hx-target= "#main" class="bg-red-500 hover:bg-red-700 text-white rounded-md px-4 py-2">Cancel</button>
-
-    </form>
+    <div class="bg-black bg-opacity-60 rounded-2xl p-4">
+        <h1 class="text-2xl font-bold mb-4 text-white">Edit Student</h1>
+        <form method="POST">
+            <div class="mb-4">
+                <label for="student_id" class="block mb-2 text-white">Select Student</label>
+                <select  hx-get="/get-student-details" hx-target="#main" id="student_id" name="student_id" class="bg-white text-black rounded-md px-3 py-2 w-full border border-black" required>
+                    {% for student_id, student_name in form.student_id.choices %}
+                    <option value="{{ student_id }}" {% if student_id == student.id %} selected {% endif %}>
+                        {{ student_name }}
+                    </option>
+                {% endfor %}
+                </select>
+            </div>
+            <div class="mb-4">
+                <label for="name" class="block mb-2 text-white">Name</label>
+                <input value= "{{student.name}}" type="text" id="name" name="name" class="bg-white text-black rounded-md px-3 py-2 w-full border border-black" required>
+            </div>
+            <div class="mb-4">
+                <label for="surname" class="block mb-2 text-white">Surname</label>
+                <input value= "{{student.surname}}" type="text" id="surname" name="surname" class="bg-white text-black rounded-md px-3 py-2 w-full border border-black" required>
+            </div>
+            <div class="mb-4">
+                <label for="parent" class="block mb-2 text-white">Parent</label>
+                <input value= "{{student.parent}}" type="text" class="bg-white text-black rounded-md px-3 py-2 w-full border border-black" id="parent" name="parent" required>
+            </div>
+            <div class="mb-4">
+                <label for="email" class="block mb-2 text-white">Email</label>
+                <input value= "{{student.email}}" type="text" id="email" name="email" class="bg-white text-black rounded-md px-3 py-2 w-full border border-black" required>
+            </div>
+            <div class="mb-4">
+                <label for="address" class="block mb-2 text-white">Address</label>
+                <input value= "{{ student.address }}" type="text" id="address" name="address" class="bg-white text-black rounded-md px-3 py-2 w-full border border-black" required>
+            </div>
+            <div class="mb-4">
+                <label for="phone_number" class="block mb-2 text-white">Phone Number</label>
+                <input value= "{{student.phone_number}}" type="text" id="phone_number" name="phone_number" class="bg-white text-black rounded-md px-3 py-2 w-full border border-black" required>
+            </div>
+            <div class="mb-4">
+                <label for="price_per_hour {£}" class="block mb-2 text-white">Price per Hour</label>
+                <input value= "{{student.price_per_hour}}" type="text" id="price_per_hour" name="price_per_hour" class="bg-white text-black rounded-md px-3 py-2 w-full border border-black" required>
+            </div>
+            <div class="flex justify-end">
+                <button hx-get="/" hx-target= "#main" class="bg-red-500 hover:bg-red-700 text-white rounded-md px-4 py-2 mr-4">Cancel</button>
+                <button hx-post="/edit-student" hx-target = "#main" class="bg-blue-500 hover:bg-blue-700 text-white rounded-md px-4 py-2">Edit</button>
+            </div>  
+        </form>
+    </div>
 </div>
