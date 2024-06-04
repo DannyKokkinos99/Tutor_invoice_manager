@@ -1,0 +1,19 @@
+{
+  "name": "tutor_invoice_manager",
+  "version": "1.0.0",
+  "description": "Tutor Invoice Manager is a web application designed to help tutors manage their students' invoices efficiently. This application allows tutors to create, manage, and send invoices to their students. To achieve this I used Flask as my web framework. I then used HTMX and Tailwind on the frontend.",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "tailwind-build": "npx tailwindcss -i ./static/css/input.css -o ./static/css/main.css --watch"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "tailwindcss": "^3.4.3"
+  }
+}

@@ -22,6 +22,7 @@ def create_app():
 
 app = create_app()
 
+
 @app.route("/")
 def index():
     """index endpoint"""
@@ -123,6 +124,7 @@ def create_invoice_form():
             pdf.output(f"Invoices/{student.name}/Invoice-{student.invoice_count}.pdf")
             return render_template("invoice_inspection.html", student_id=student_id)
     return render_template("invoice_form.html", form=form)
+
 
 @app.route('/pdf')
 def serve_pdf():
