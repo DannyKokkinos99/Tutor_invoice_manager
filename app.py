@@ -150,5 +150,6 @@ def invoice_send():
         return render_template('index.html')
 
 
-if __name__ == "__main__":
-    app.run(port=9000)
+@app.route('/dashboard', methods=["GET"])
+def dashboard():
+    return render_template("dashboard.html")
