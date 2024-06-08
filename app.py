@@ -148,8 +148,3 @@ def invoice_send():
         student.invoice_count = student.invoice_count + 1
         db.session.commit()
         return render_template('index.html')
-
-
-@app.route('/dashboard', methods=["GET"])
-def dashboard():
-    return render_template("dashboard.html")
