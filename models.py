@@ -3,6 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 
 db = SQLAlchemy()
 
+
 class Student(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
@@ -13,6 +14,14 @@ class Student(db.Model):
     phone_number = db.Column(db.String(20), nullable=False)
     price_per_hour = db.Column(db.Integer, nullable=False)
     invoice_count = db.Column(db.Integer, default=1)
+    invoice = db.relationship("Invoice", backref="user", lazy=True)
 
     def __repr__(self):
-        return f'<Student {self.name} {self.surname}>'
+        return f"<Student {self.name} {self.surname}>"
+
+
+class Invoice(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    hours = db.Column(db.Float, nullable=False)
+    total = db.Column(db.Float, nullable=False)
+    student_id = db.Column(db.Integer, db.ForeignKey("student.id"), nullable=False)

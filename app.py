@@ -1,7 +1,8 @@
 # pylint: disable= C0116,C0114,C0115
 import secrets
-from flask import Flask, render_template, redirect, url_for, request, send_file
-from models import db, Student
+import zipfile
+from flask import Flask, render_template, redirect, url_for, request, send_file, jsonify
+from models import db, Student, Invoice
 from config import SQLALCHEMY_DATABASE_URI, SQLALCHEMY_TRACK_MODIFICATIONS
 from forms import AddStudentForm, EditStudentForm, RemoveStudentForm, CreateInvoiceForm
 from pdf import InvoicePDF
@@ -28,14 +29,15 @@ def index():
     """index endpoint"""
     return render_template("index.html")
 
-@app.route('/get-student-details', methods=['GET'])
+
+@app.route("/get-student-details", methods=["GET"])
 def get_student_details():
-    student_id = int(request.args.get('student_id'))
+    student_id = int(request.args.get("student_id"))
     student = Student.query.get(student_id)
     form = EditStudentForm()
     form.set_choices()
     if student:
-        return render_template("filled_form.html", student=student, form = form)
+        return render_template("filled_form.html", student=student, form=form)
     return 404
 
 
@@ -109,6 +111,7 @@ def create_invoice_form():
         if student:
             unit_price = student.price_per_hour
             total = quantity * unit_price
+            print(total)
             # Create Invoice
             pdf = InvoicePDF()
             pdf.add_page()
@@ -122,29 +125,75 @@ def create_invoice_form():
             pdf.total_amount(total)
             pdf.create_folders(student.name)
             pdf.output(f"Invoices/{student.name}/Invoice-{student.invoice_count}.pdf")
-            return render_template("invoice_inspection.html", student_id=student_id)
+            return render_template(
+                "invoice_inspection.html",
+                student_id=student_id,
+                hours=quantity,
+                total=total,
+            )
     return render_template("invoice_form.html", form=form)
 
 
-@app.route('/pdf')
+@app.route("/pdf")
 def serve_pdf():
-    student_id = int(request.args.get('student_id'))
+    student_id = int(request.args.get("student_id"))
     student = Student.query.get(student_id)
-    return send_file(f'Invoices/{student.name}/Invoice-{student.invoice_count}.pdf',
-                      mimetype='application/pdf')
+    return send_file(
+        f"Invoices/{student.name}/Invoice-{student.invoice_count}.pdf",
+        mimetype="application/pdf",
+    )
 
 
-@app.route('/invoice_send', methods=["POST"])
+@app.route("/invoice_send", methods=["POST"])
 def invoice_send():
     sender_email = "dannykokkinos@outlook.com"
-    sender_password = open("senderpassword.txt", 'r', encoding= "UTF-8").read()
-    # Send Invoice via email
-    if request.method == "POST":
-        student_id = int(request.args.get('student_id'))
+    student_id = int(request.args.get("student_id"))
+    hours = float(request.args.get("hours"))
+    total = float(request.args.get("total"))
+    try:
+        sender_password = open("senderpassword.txt", "r", encoding="UTF-8").read()
+        # Send Invoice via email
         student = Student.query.get(student_id)
-        email = Emailer(sender_email,sender_password)
+        email = Emailer(sender_email, sender_password)
         email.send_email("email_template.txt", student)
         # Increment the counter
         student.invoice_count = student.invoice_count + 1
         db.session.commit()
-        return render_template('index.html')
+        # Create Invoice entry in database
+        new_invoice = Invoice(hours=hours, total=total, student_id=student_id)
+        db.session.add(new_invoice)
+        db.session.commit()
+        return render_template("index.html")
+    except IndentationError:
+        return render_template("index.html")
+    except FileNotFoundError:
+        new_invoice = Invoice(hours=hours, total=total, student_id=student_id)
+        db.session.add(new_invoice)
+        db.session.commit()
+        return render_template("index.html")
+
+
+@app.route("/api/get_total_students", methods=["GET"])
+def get_total_students():
+    students = Student.query.all()
+    return str(len(students) - 1)
+
+
+@app.route("/api/get_total_hours", methods=["GET"])
+def get_total_hours():
+    invoices = Invoice.query.all()
+    hours_list = [invoice.hours for invoice in invoices]
+    hours = sum(hours_list)
+    return str(hours)
+
+
+@app.route("/api/get_total_paid", methods=["GET"])
+def get_total_paid():
+    invoices = Invoice.query.all()
+    total_list = [invoice.total for invoice in invoices]
+    total = round(sum(total_list))
+    return f"£{str(total)}"
+
+
+if __name__ == "__main__":
+    app.run(debug=True, host="0.0.0.0", port=5001)
