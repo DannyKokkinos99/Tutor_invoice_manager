@@ -1,5 +1,4 @@
 # pylint: disable= C0116,C0114,C0115, E1101
-from pathlib import Path
 from googleapiclient.http import MediaFileUpload
 from googleapiclient.discovery import build
 from google.oauth2 import service_account
