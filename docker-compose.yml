@@ -1,0 +1,12 @@
+version: '3'
+
+services:
+  app-tutor:
+    image: app-tutor:latest
+    container_name: app-tutor
+    build:
+      dockerfile: Dockerfile
+    ports:
+      - '5000:5000'
+    volumes:
+      - .:/app

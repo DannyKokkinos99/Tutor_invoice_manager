@@ -1,12 +1,22 @@
 # pylint: disable= C0116,C0114,C0115
 import secrets
-import zipfile
 from flask import Flask, render_template, redirect, url_for, request, send_file, jsonify
 from models import db, Student, Invoice
 from config import SQLALCHEMY_DATABASE_URI, SQLALCHEMY_TRACK_MODIFICATIONS
 from forms import AddStudentForm, EditStudentForm, RemoveStudentForm, CreateInvoiceForm
 from pdf import InvoicePDF
-from emailer import Emailer
+from gdrive import Gdrive
+
+PARENT_FOLDER_ID = "1--qhpO7fr5q4q7x0pRxdiETcFyBsNOGN"  # FOUND IN URL
+SERVICE_ACCOUNT_FILE = (
+    "service_account.json"  # GIVE FOLDER PERMISSIONS TO SERVICE ACCOUNT
+)
+SCOPE = [
+    "https://www.googleapis.com/auth/drive",
+    "https://www.googleapis.com/auth/drive.readonly",
+]  # do not change this
+
+drive_manager = Gdrive(SERVICE_ACCOUNT_FILE, SCOPE)
 
 
 def create_app():
@@ -109,6 +119,14 @@ def create_invoice_form():
         quantity = form.hours_tutored.data
         student = Student.query.get(student_id)
         if student:
+            # Find invoice count from drive
+            folder_id = drive_manager.ensure_folder_exists(
+                PARENT_FOLDER_ID, student.name
+            )
+            file_count = drive_manager.file_count(folder_id) + 1
+            student.invoice_count = file_count
+            db.session.commit()
+            print(f"INVOICE COUNT {file_count}")
             unit_price = student.price_per_hour
             total = quantity * unit_price
             print(total)
@@ -146,31 +164,20 @@ def serve_pdf():
 
 @app.route("/invoice_send", methods=["POST"])
 def invoice_send():
-    sender_email = "dannykokkinos@outlook.com"
     student_id = int(request.args.get("student_id"))
     hours = float(request.args.get("hours"))
     total = float(request.args.get("total"))
-    try:
-        sender_password = open("senderpassword.txt", "r", encoding="UTF-8").read()
-        # Send Invoice via email
-        student = Student.query.get(student_id)
-        email = Emailer(sender_email, sender_password)
-        email.send_email("email_template.txt", student)
-        # Increment the counter
-        student.invoice_count = student.invoice_count + 1
-        db.session.commit()
-        # Create Invoice entry in database
-        new_invoice = Invoice(hours=hours, total=total, student_id=student_id)
-        db.session.add(new_invoice)
-        db.session.commit()
-        return render_template("index.html")
-    except IndentationError:
-        return render_template("index.html")
-    except FileNotFoundError:
-        new_invoice = Invoice(hours=hours, total=total, student_id=student_id)
-        db.session.add(new_invoice)
-        db.session.commit()
-        return render_template("index.html")
+    student = Student.query.get(student_id)
+    # Create new invoice
+    new_invoice = Invoice(hours=hours, total=total, student_id=student_id)
+    db.session.add(new_invoice)
+    db.session.commit()
+    # Save to gdrive
+    folder_id = drive_manager.ensure_folder_exists(PARENT_FOLDER_ID, student.name)
+    file_path = f"Invoices/{student.name}/Invoice-{student.invoice_count}.pdf"
+    file_name = f"Invoice-{student.invoice_count}.pdf"
+    drive_manager.upload_file(folder_id, file_path, file_name)
+    return render_template("index.html")
 
 
 @app.route("/api/get_total_students", methods=["GET"])
@@ -196,4 +203,4 @@ def get_total_paid():
 
 
 if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0", port=5001)
+    app.run(debug=True, host="0.0.0.0", port=5000)

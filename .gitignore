@@ -5,3 +5,5 @@ senderpassword.txt
 .pytest_cache
 __pycache__
 .vscode
+.env
+service_account.json
