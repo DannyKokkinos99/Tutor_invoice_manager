@@ -1,11 +1,16 @@
 # pylint: disable= C0116,C0114,C0115
 import secrets
+import os
 from flask import Flask, render_template, redirect, url_for, request, send_file, jsonify
 from models import db, Student, Invoice
 from config import SQLALCHEMY_DATABASE_URI, SQLALCHEMY_TRACK_MODIFICATIONS
 from forms import AddStudentForm, EditStudentForm, RemoveStudentForm, CreateInvoiceForm
 from pdf import InvoicePDF
 from gdrive import Gdrive
+from emailer import Emailer
+from utility.logger import get_logger
+from dotenv import load_dotenv
+
 
 PARENT_FOLDER_ID = "1--qhpO7fr5q4q7x0pRxdiETcFyBsNOGN"  # FOUND IN URL
 SERVICE_ACCOUNT_FILE = (
@@ -17,6 +22,9 @@ SCOPE = [
 ]  # do not change this
 
 drive_manager = Gdrive(SERVICE_ACCOUNT_FILE, SCOPE)
+email_manager = Emailer(os.getenv("EMAIL"), os.getenv("APP_PASSWORD"))
+logger = get_logger(__name__)
+load_dotenv()  # Loads env variables
 
 
 def create_app():
@@ -68,6 +76,7 @@ def add_student():
         # Add student to database
         db.session.add(new_student)
         db.session.commit()
+        logger.critical("Added student to database")
         return redirect(
             url_for("index")
         )  # Redirect to index or another page after submission
@@ -90,6 +99,7 @@ def edit_student():
             student.phone_number = form.phone_number.data
             student.price_per_hour = form.price_per_hour.data
             db.session.commit()
+            logger.critical("Edited student")
             return redirect(
                 url_for("index")
             )  # Redirect to index or another page after submission
@@ -106,6 +116,7 @@ def remove_student():
         if student:
             db.session.delete(student)
             db.session.commit()
+            logger.critical("Student removed")
             return redirect(url_for("index"))
     return render_template("remove_student.html", form=form)
 
@@ -126,10 +137,8 @@ def create_invoice_form():
             file_count = drive_manager.file_count(folder_id) + 1
             student.invoice_count = file_count
             db.session.commit()
-            print(f"INVOICE COUNT {file_count}")
             unit_price = student.price_per_hour
             total = quantity * unit_price
-            print(total)
             # Create Invoice
             pdf = InvoicePDF()
             pdf.add_page()
@@ -168,15 +177,19 @@ def invoice_send():
     hours = float(request.args.get("hours"))
     total = float(request.args.get("total"))
     student = Student.query.get(student_id)
-    # Create new invoice
+    # Send email
+    email_manager.send_email("email_template.txt", student)
+    # Create new invoice database entry
     new_invoice = Invoice(hours=hours, total=total, student_id=student_id)
     db.session.add(new_invoice)
     db.session.commit()
-    # Save to gdrive
+    logger.critical("Invoice entry created")
+    # Save Invoice to google drive
     folder_id = drive_manager.ensure_folder_exists(PARENT_FOLDER_ID, student.name)
     file_path = f"Invoices/{student.name}/Invoice-{student.invoice_count}.pdf"
     file_name = f"Invoice-{student.invoice_count}.pdf"
     drive_manager.upload_file(folder_id, file_path, file_name)
+    logger.critical("File uploaded to google drive")
     return render_template("index.html")
 
 
