@@ -9,7 +9,7 @@ class Student(db.Model):
     name = db.Column(db.String(100), nullable=False)
     surname = db.Column(db.String(100), nullable=False)
     parent = db.Column(db.String(100), nullable=False)
-    email = db.Column(db.String(120), nullable=False, unique=True)
+    email = db.Column(db.String(120), nullable=False)
     address = db.Column(db.String(200), nullable=False)
     phone_number = db.Column(db.String(20), nullable=False)
     price_per_hour = db.Column(db.Integer, nullable=False)

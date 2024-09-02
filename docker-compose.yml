@@ -1,9 +1,9 @@
 version: '3'
 
 services:
-  app-tutor:
-    image: dannykokkinos99/app-tutor:latest
-    container_name: app-tutor
+  app-tutor-dev:
+    image: dannykokkinos99/app-tutor:dev
+    container_name: app-tutor-dev
     build:
       dockerfile: Dockerfile
     ports:
