@@ -10,7 +10,7 @@ from gdrive import Gdrive
 from emailer import Emailer
 from utility.logger import get_logger
 from dotenv import load_dotenv
-
+import pdfplumber
 
 PARENT_FOLDER_ID = "1--qhpO7fr5q4q7x0pRxdiETcFyBsNOGN"  # FOUND IN URL
 SERVICE_ACCOUNT_FILE = (
@@ -20,11 +20,52 @@ SCOPE = [
     "https://www.googleapis.com/auth/drive",
     "https://www.googleapis.com/auth/drive.readonly",
 ]  # do not change this
+LOCAL_PARENT_FOLDER = "Invoices"
+
 
 drive_manager = Gdrive(SERVICE_ACCOUNT_FILE, SCOPE)
 email_manager = Emailer(os.getenv("EMAIL"), os.getenv("APP_PASSWORD"))
 logger = get_logger(__name__)
 load_dotenv()  # Loads env variables
+
+
+def get_student_id(student_name):
+    student = Student.query.filter_by(name=student_name).first()
+    if student:
+        return student.id
+
+
+def read_field_from_pdf(file_path, keyword):
+    with pdfplumber.open(file_path) as pdf:
+        for page in pdf.pages:
+            text = page.extract_text()
+            if text:
+                lines = text.split("\n")
+                for line in lines:
+                    if keyword in line:
+                        return line
+    return ""
+
+
+def update_local_database(parent_folder, folder_names):
+    db.session.query(Invoice).delete()
+    db.session.commit()
+    for folder_name in folder_names:
+        folder_path = os.path.join(parent_folder, folder_name)
+        for file_name in os.listdir(folder_path):
+            file_path = os.path.join(folder_path, file_name)
+            total_price = float(read_field_from_pdf(file_path, "£").split("£")[2])
+            hours = float(
+                read_field_from_pdf(file_path, "£").split("£")[0].split(" ")[2]
+            )
+            student_id = get_student_id(folder_name)
+            logger.info(
+                f"New Invoice - StudentID: {student_id} | Hours: {hours} | Total: {total_price}"
+            )
+            # Add all invoices to local db
+            new_invoice = Invoice(hours=hours, total=total_price, student_id=student_id)
+            db.session.add(new_invoice)
+            db.session.commit()
 
 
 def create_app():
@@ -159,6 +200,15 @@ def create_invoice_form():
                 total=total,
             )
     return render_template("invoice_form.html", form=form)
+
+
+@app.route("/update_database", methods=["GET"])
+def update_database():
+    if request.method == "GET":
+        logger.debug("made it into update database")
+        folder_names = drive_manager.update_database(PARENT_FOLDER_ID, "Invoices")
+        update_local_database(LOCAL_PARENT_FOLDER, folder_names)  # TODO: ADD BACK LATER
+        return redirect(url_for("index"))
 
 
 @app.route("/pdf")

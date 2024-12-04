@@ -1,7 +1,9 @@
 # pylint: disable= C0116,C0114,C0115, E1101
-from googleapiclient.http import MediaFileUpload
+from googleapiclient.http import MediaFileUpload, MediaIoBaseDownload
 from googleapiclient.discovery import build
 from google.oauth2 import service_account
+import os
+import io
 
 
 class Gdrive:
@@ -113,3 +115,57 @@ class Gdrive:
             return folder_id
         else:
             return self.create_folder(parent_folder_id, folder_name)
+
+    def update_database(self, parent_folder_id, parent_path):
+        query = f"'{parent_folder_id}' in parents and mimeType = 'application/vnd.google-apps.folder'"
+        results = self.service.files().list(q=query, fields="files(id, name)").execute()
+        folders = results.get("files", [])
+        folder_names = [folder["name"] for folder in folders]
+        folder_ids = [folder["id"] for folder in folders]
+        print(folder_names)
+        print(folder_ids)
+        # for folder_name, folder_id in zip(folder_names, folder_ids):
+        #     folder_path = os.path.join(parent_path, folder_name)
+        #     self.download_folder(folder_id, folder_path)
+        return folder_names
+
+    def download_folder(self, folder_id, local_path):
+
+        if not os.path.exists(local_path):
+            os.makedirs(local_path)
+
+        # Query to get all files within the specified folder
+        query = f"'{folder_id}' in parents"
+        results = (
+            self.service.files()
+            .list(q=query, fields="files(id, name, mimeType)")
+            .execute()
+        )
+        items = results.get("files", [])
+
+        for item in items:
+            file_id = item["id"]
+            file_name = item["name"]
+            file_path = os.path.join(local_path, file_name)
+
+            # Check if it's a folder or a file
+            if item["mimeType"] == "application/vnd.google-apps.folder":
+                # Recursively download subfolder
+                self.download_folder(file_id, file_path)
+            else:
+                # Download the file
+                request = self.service.files().get_media(fileId=file_id)
+                file_data = io.BytesIO()
+                downloader = MediaIoBaseDownload(file_data, request)
+
+                done = False
+                while not done:
+                    status, done = downloader.next_chunk()
+                    print(f"Download {file_name}: {int(status.progress() * 100)}%.")
+
+                # Write the downloaded content to the local file
+                with open(file_path, "wb") as f:
+                    file_data.seek(0)
+                    f.write(file_data.read())
+
+                print(f"File {file_name} downloaded successfully.")

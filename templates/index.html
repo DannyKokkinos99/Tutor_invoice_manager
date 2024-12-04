@@ -1,65 +1,112 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Tutoring Portal</title>
     <!-- Include Tailwind CSS -->
-    <link rel="preload" href="/static/css/main.css" as="style">
-    <link rel="stylesheet" href="/static/css/main.css">
+    <link rel="preload" href="/static/css/main.css" as="style" />
+    <link rel="stylesheet" href="/static/css/main.css" />
     <!-- Include htmx library -->
-    <script src="https://unpkg.com/htmx.org@1.9.12"
-        integrity="sha384-ujb1lZYygJmzgSwoxRggbCHcjc0rB2XoQrxeTUQyRjrOnlCoYta87iKBWq3EsdM2"
-        crossorigin="anonymous"></script>
-</head>
+    <script
+      src="https://unpkg.com/htmx.org@1.9.12"
+      integrity="sha384-ujb1lZYygJmzgSwoxRggbCHcjc0rB2XoQrxeTUQyRjrOnlCoYta87iKBWq3EsdM2"
+      crossorigin="anonymous"
+    ></script>
+  </head>
 
-<body class="relative">
-    <div class="bg-cover bg-center bg-no-repeat h-screen w-screen"
-        style="background-image: url('static/images/index_3.jpg')">
-        <!-- New div at the top center of the screen -->
-        <div id="main">
-            <div
-                class="absolute top-10 left-1/2 -translate-x-1/2  mt-4 bg-black bg-opacity-50 p-4 rounded-2xl flex flex-row">
-                <div>
-                    <p class="text-white mx-10 flex justify-center">You have worked with</p>
-                    <p class="text-blue-700 text-5xl flex justify-center" id="get_total_students"
-                        hx-get="/api/get_total_students" hx-trigger="load" hx-swap="innerHTML"></p>
-                    <p class="text-white flex justify-center">students</p>
-                </div>
-                <div>
-                    <p class="text-white mx-10 flex justify-center">You have taught</p>
-                    <p class="text-teal-400 text-5xl flex justify-center" id="get_total_hours"
-                        hx-get="/api/get_total_hours" hx-trigger="load" hx-swap="innerHTML"></p>
-                    <p class="text-white flex justify-center">hours of lessons</p>
-                </div>
-                <div>
-                    <p class="text-white mx-10 flex justify-center">You have been paid</p>
-                    <p class="text-green-600 text-5xl flex justify-center" id="get_total_paid"
-                        hx-get="/api/get_total_paid" hx-trigger="load" hx-swap="innerHTML"></p>
-                    <p class="text-white flex justify-center">for work done</p>
-                </div>
-            </div>
-
-            <div class="absolute left-1/2 -translate-x-1/2 bottom-1/2">
-                <!-- Button container with background rectangle -->
-                <div class="bg-black bg-opacity-50 p-8 rounded-2xl w-80 flex flex-col items-center justify-center">
-                    <button hx-get="/create-invoice-form" hx-target="#main"
-                        class="bg-black hover:bg-gray-400 text-white hover:text-gray-800 rounded-2xl px-6 py-3 w-48 mb-6 border-2 border-white">Create
-                        Invoice</button>
-                    <button hx-get="/add-student" hx-target="#main"
-                        class="bg-black hover:bg-gray-400 text-white hover:text-gray-800 rounded-2xl px-6 py-3 w-48 mb-6 border-2 border-white ">Add
-                        Student</button>
-                    <button hx-get="/edit-student" hx-target="#main"
-                        class="bg-black hover:bg-gray-400 text-white hover:text-gray-800 rounded-2xl px-6 py-3 w-48 mb-6 border-2 border-white">Edit
-                        Student</button>
-                    <button hx-get="/remove-student" hx-target="#main"
-                        class="bg-black hover:bg-gray-400 text-white hover:text-gray-800 rounded-2xl px-6 py-3 w-48 mb-6 border-2 border-white">Remove
-                        Student</button>
-                </div>
-            </div>
+  <body>
+    <div
+      class="bg-cover bg-center bg-no-repeat h-screen w-screen"
+      style="background-image: url('static/images/index_3.jpg')"
+    >
+      <!-- New div at the top center of the screen -->
+      <div id="main">
+        <div
+          class="absolute top-10 left-1/2 -translate-x-1/2 mt-4 bg-black bg-opacity-50 p-4 rounded-2xl flex flex-row"
+        >
+          <div>
+            <p class="text-white mx-10 flex justify-center">
+              You have worked with
+            </p>
+            <p
+              class="text-blue-700 text-5xl flex justify-center"
+              id="get_total_students"
+              hx-get="/api/get_total_students"
+              hx-trigger="load"
+              hx-swap="innerHTML"
+            ></p>
+            <p class="text-white flex justify-center">students</p>
+          </div>
+          <div>
+            <p class="text-white mx-10 flex justify-center">You have taught</p>
+            <p
+              class="text-teal-400 text-5xl flex justify-center"
+              id="get_total_hours"
+              hx-get="/api/get_total_hours"
+              hx-trigger="load"
+              hx-swap="innerHTML"
+            ></p>
+            <p class="text-white flex justify-center">hours of lessons</p>
+          </div>
+          <div>
+            <p class="text-white mx-10 flex justify-center">
+              You have been paid
+            </p>
+            <p
+              class="text-green-600 text-5xl flex justify-center"
+              id="get_total_paid"
+              hx-get="/api/get_total_paid"
+              hx-trigger="load"
+              hx-swap="innerHTML"
+            ></p>
+            <p class="text-white flex justify-center">for work done</p>
+          </div>
         </div>
-    </div>
-</body>
 
+    <section class="flex items-center justify-center h-screen">
+    <!-- Button container with background rectangle -->
+        <div
+            class="bg-black bg-opacity-50 p-8 rounded-2xl w-80 flex flex-col items-center justify-center"
+          >
+            <button
+              hx-get="/create-invoice-form"
+              hx-target="#main"
+              class="bg-black hover:bg-gray-400 text-white hover:text-gray-800 rounded-2xl px-6 py-3 w-48 mb-6 border-2 border-white"
+            >
+              Create Invoice
+            </button>
+            <button
+              hx-get="/add-student"
+              hx-target="#main"
+              class="bg-black hover:bg-gray-400 text-white hover:text-gray-800 rounded-2xl px-6 py-3 w-48 mb-6 border-2 border-white"
+            >
+              Add Student
+            </button>
+            <button
+              hx-get="/edit-student"
+              hx-target="#main"
+              class="bg-black hover:bg-gray-400 text-white hover:text-gray-800 rounded-2xl px-6 py-3 w-48 mb-6 border-2 border-white"
+            >
+              Edit Student
+            </button>
+            <button
+              hx-get="/remove-student"
+              hx-target="#main"
+              class="bg-black hover:bg-gray-400 text-white hover:text-gray-800 rounded-2xl px-6 py-3 w-48 mb-6 border-2 border-white"
+            >
+              Remove Student
+            </button>
+            <button
+              hx-get="/update_database"
+              hx-target="#main"
+              class="bg-black hover:bg-gray-400 text-white hover:text-gray-800 rounded-2xl px-6 py-3 w-48 mb-6 border-2 border-white"
+            >
+              Update Database
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </body>
 </html>
