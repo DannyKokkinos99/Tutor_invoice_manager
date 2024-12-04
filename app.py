@@ -12,6 +12,7 @@ from utility.logger import get_logger
 from dotenv import load_dotenv
 import pdfplumber
 
+GOOGLE_DOC = "1pnp-XjBkuIb0LnspKW3d2uw2v6l7Byxxfuwgy5b0Oak"
 PARENT_FOLDER_ID = "1--qhpO7fr5q4q7x0pRxdiETcFyBsNOGN"  # FOUND IN URL
 SERVICE_ACCOUNT_FILE = (
     "service_account.json"  # GIVE FOLDER PERMISSIONS TO SERVICE ACCOUNT
@@ -27,6 +28,25 @@ drive_manager = Gdrive(SERVICE_ACCOUNT_FILE, SCOPE)
 email_manager = Emailer(os.getenv("EMAIL"), os.getenv("APP_PASSWORD"))
 logger = get_logger(__name__)
 load_dotenv()  # Loads env variables
+
+
+def add_students(students):
+    db.session.query(Student).delete()
+    for student in students:
+        new_student = Student(
+            name=student["name"],
+            surname=student["surname"],
+            parent=student["parent"],
+            email=student["email"],
+            address=student["address"],
+            phone_number=student["phone_number"],
+            price_per_hour=student["price_per_hour"],
+        )
+        db.session.add(new_student)
+        db.session.commit()
+        logger.info(
+            f"New student added - Name: {student["name"]} | Surname: {student["surname"]}"
+        )
 
 
 def get_student_id(student_name):
@@ -205,9 +225,9 @@ def create_invoice_form():
 @app.route("/update_database", methods=["GET"])
 def update_database():
     if request.method == "GET":
-        logger.debug("made it into update database")
+        add_students(drive_manager.get_students_from_gdoc(GOOGLE_DOC))
         folder_names = drive_manager.update_database(PARENT_FOLDER_ID, "Invoices")
-        update_local_database(LOCAL_PARENT_FOLDER, folder_names)  # TODO: ADD BACK LATER
+        update_local_database(LOCAL_PARENT_FOLDER, folder_names)
         return redirect(url_for("index"))
 
 

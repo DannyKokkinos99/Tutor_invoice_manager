@@ -4,6 +4,7 @@ from googleapiclient.discovery import build
 from google.oauth2 import service_account
 import os
 import io
+import re
 
 
 class Gdrive:
@@ -14,6 +15,7 @@ class Gdrive:
             serv_account, scopes=scopes
         )
         self.service = build("drive", "v3", credentials=self.creds)
+        self.docs_service = build("docs", "v1", credentials=self.creds)
         print("Google drive handler created")
 
     def upload_file(self, parent_folder_id, folder_name, file_name):
@@ -122,11 +124,9 @@ class Gdrive:
         folders = results.get("files", [])
         folder_names = [folder["name"] for folder in folders]
         folder_ids = [folder["id"] for folder in folders]
-        print(folder_names)
-        print(folder_ids)
-        # for folder_name, folder_id in zip(folder_names, folder_ids):
-        #     folder_path = os.path.join(parent_path, folder_name)
-        #     self.download_folder(folder_id, folder_path)
+        for folder_name, folder_id in zip(folder_names, folder_ids):
+            folder_path = os.path.join(parent_path, folder_name)
+            self.download_folder(folder_id, folder_path)
         return folder_names
 
     def download_folder(self, folder_id, local_path):
@@ -169,3 +169,42 @@ class Gdrive:
                     f.write(file_data.read())
 
                 print(f"File {file_name} downloaded successfully.")
+
+    def get_students_from_gdoc(self, document_id):
+        """Reads the content of a Google Doc and parses student information."""
+
+        # Retrieve the document content from Google Docs API
+        document = self.docs_service.documents().get(documentId=document_id).execute()
+
+        # Extract the full text from the document
+        full_text = ""
+        for element in document.get("body").get("content"):
+            if "paragraph" in element:
+                paragraph = element["paragraph"]
+                for text_run in paragraph.get("elements", []):
+                    if "textRun" in text_run:
+                        full_text += text_run["textRun"]["content"]
+
+        # Split the text into student blocks based on double newlines
+        student_blocks = re.split(r"\n\s*\n", full_text.strip())
+
+        # Parse each student block
+        students = []
+        for block in student_blocks:
+            lines = block.splitlines()
+            if (
+                len(lines) >= 8
+            ):  # Ensure there are enough lines to form a student record
+                student = {
+                    "name": lines[0].strip(),
+                    "surname": lines[1].strip(),
+                    "parent": lines[2].strip(),
+                    "email": lines[3].strip(),
+                    "address": lines[4].strip(),
+                    "phone_number": lines[5].strip(),
+                    "price_per_hour": lines[6].strip(),
+                    "invoice_count": lines[7].strip(),
+                }
+                students.append(student)
+
+        return students
