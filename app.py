@@ -11,6 +11,7 @@ from emailer import Emailer
 from utility.logger import get_logger
 from dotenv import load_dotenv
 import pdfplumber
+from datetime import datetime
 
 GOOGLE_DOC = "1pnp-XjBkuIb0LnspKW3d2uw2v6l7Byxxfuwgy5b0Oak"
 PARENT_FOLDER_ID = "1--qhpO7fr5q4q7x0pRxdiETcFyBsNOGN"  # FOUND IN URL
@@ -79,11 +80,25 @@ def update_local_database(parent_folder, folder_names):
                 read_field_from_pdf(file_path, "£").split("£")[0].split(" ")[2]
             )
             student_id = get_student_id(folder_name)
+            # Gets the date from invoice add formats it correctly for the database
+            date_wrong_format = (
+                read_field_from_pdf(file_path, "Invoice Date:").split(":")[1].lstrip()
+            )
+            split_wrong_date_format = date_wrong_format.split("/")
+            day = split_wrong_date_format[0]
+            month = split_wrong_date_format[1]
+            year = split_wrong_date_format[2]
+            correct_date_format = f"{year}-{month}-{day}"
             logger.info(
-                f"New Invoice - StudentID: {student_id} | Hours: {hours} | Total: {total_price}"
+                f"New Invoice - StudentID: {student_id} | Hours: {hours} | Total: {total_price} | Date: {correct_date_format}"
             )
             # Add all invoices to local db
-            new_invoice = Invoice(hours=hours, total=total_price, student_id=student_id)
+            new_invoice = Invoice(
+                hours=hours,
+                total=total_price,
+                student_id=student_id,
+                date=correct_date_format,
+            )
             db.session.add(new_invoice)
             db.session.commit()
 
@@ -250,7 +265,8 @@ def invoice_send():
     # Send email
     email_manager.send_email("email_template.txt", student)
     # Create new invoice database entry
-    new_invoice = Invoice(hours=hours, total=total, student_id=student_id)
+    date = datetime.now().strftime("%Y-%m-%d")
+    new_invoice = Invoice(hours=hours, total=total, student_id=student_id, date=date)
     db.session.add(new_invoice)
     db.session.commit()
     logger.critical("Invoice entry created")

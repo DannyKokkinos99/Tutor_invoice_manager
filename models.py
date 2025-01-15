@@ -25,3 +25,4 @@ class Invoice(db.Model):
     hours = db.Column(db.Float, nullable=False)
     total = db.Column(db.Float, nullable=False)
     student_id = db.Column(db.Integer, db.ForeignKey("student.id"), nullable=False)
+    date = db.Column(db.String(10), nullable=False)
