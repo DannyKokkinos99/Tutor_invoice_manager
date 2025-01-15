@@ -11,10 +11,14 @@ from emailer import Emailer
 from utility.logger import get_logger
 from dotenv import load_dotenv
 import pdfplumber
+import csv
+from collections import defaultdict
 from datetime import datetime
+from sqlalchemy import and_
 
 GOOGLE_DOC = "1pnp-XjBkuIb0LnspKW3d2uw2v6l7Byxxfuwgy5b0Oak"
 PARENT_FOLDER_ID = "1--qhpO7fr5q4q7x0pRxdiETcFyBsNOGN"  # FOUND IN URL
+TAX_RETURNS_FOLDER_ID = "1bpqM7ZChtiegKoJvV1MLpwIZ2PuKSLtv"
 SERVICE_ACCOUNT_FILE = (
     "service_account.json"  # GIVE FOLDER PERMISSIONS TO SERVICE ACCOUNT
 )
@@ -23,12 +27,46 @@ SCOPE = [
     "https://www.googleapis.com/auth/drive.readonly",
 ]  # do not change this
 LOCAL_PARENT_FOLDER = "Invoices"
+TAX_PARENT_FOLDER = "Invoices"
 
 
 drive_manager = Gdrive(SERVICE_ACCOUNT_FILE, SCOPE)
 email_manager = Emailer(os.getenv("EMAIL"), os.getenv("APP_PASSWORD"))
 logger = get_logger(__name__)
 load_dotenv()  # Loads env variables
+
+
+def get_pending_tax_year():
+    current_year = int(datetime.now().year) - 1
+    previous_year = current_year - 1
+    return (
+        f"tax_return_{previous_year}_{current_year}.csv",
+        f"{previous_year}-04-05",
+        f"{current_year}-04-05",
+    )
+
+
+def create_tax_csv(output_csv, filter_start_date, filter_end_date):
+    # Dictionary to store the total amount for each month name
+    monthly_totals = defaultdict(float)
+    invoices = Invoice.query.filter(
+        and_(Invoice.date > filter_start_date, Invoice.date < filter_end_date)
+    ).all()
+    # Process each invoice
+    for invoice in invoices:
+        # Extract the month name from the date
+        month_name = datetime.strptime(invoice.date, "%Y-%m-%d").strftime("%B")
+        monthly_totals[month_name] += invoice.total
+
+    # Write the results to a CSV file
+    with open(output_csv, mode="w", newline="") as csvfile:
+        writer = csv.writer(csvfile)
+        writer.writerow(["Personal"])  # Write the header
+        # Sort by month name alphabetically
+        for month, total in sorted(monthly_totals.items()):
+            writer.writerow([total])
+
+    print(f"Summary saved to {output_csv}")
 
 
 def add_students(students):
@@ -243,6 +281,18 @@ def update_database():
         add_students(drive_manager.get_students_from_gdoc(GOOGLE_DOC))
         folder_names = drive_manager.update_database(PARENT_FOLDER_ID, "Invoices")
         update_local_database(LOCAL_PARENT_FOLDER, folder_names)
+        return redirect(url_for("index"))
+
+
+@app.route("/prepare_tax_return", methods=["GET"])
+def prepare_tax_return():
+    if request.method == "GET":
+        tax_year, start_date, end_date = get_pending_tax_year()
+        csv_file_path = os.path.join(TAX_PARENT_FOLDER, tax_year)
+        create_tax_csv(csv_file_path, start_date, end_date)
+        drive_manager.upload_file(
+            TAX_RETURNS_FOLDER_ID, csv_file_path, tax_year, mimetype="text/csv"
+        )
         return redirect(url_for("index"))
 
 

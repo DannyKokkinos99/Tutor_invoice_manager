@@ -18,14 +18,16 @@ class Gdrive:
         self.docs_service = build("docs", "v1", credentials=self.creds)
         print("Google drive handler created")
 
-    def upload_file(self, parent_folder_id, folder_name, file_name):
+    def upload_file(
+        self, parent_folder_id, folder_name, file_name, mimetype="application/pdf"
+    ):
         # Create a MediaFileUpload object for the file
-        media = MediaFileUpload(folder_name, mimetype="application/pdf", resumable=True)
+        media = MediaFileUpload(folder_name, mimetype=mimetype, resumable=True)
 
         # Metadata for the file (name, mimeType, etc.)
         file_metadata = {
             "name": file_name,  # Name of the file in Google Drive
-            "mimeType": "application/pdf",
+            "mimeType": mimetype,
             "parents": [parent_folder_id],  # ID of the folder to upload the file to
         }
 
