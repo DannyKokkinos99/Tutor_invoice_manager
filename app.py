@@ -15,6 +15,7 @@ import csv
 from collections import defaultdict
 from datetime import datetime
 from sqlalchemy import and_
+from pathlib import Path
 
 GOOGLE_DOC = "1pnp-XjBkuIb0LnspKW3d2uw2v6l7Byxxfuwgy5b0Oak"
 PARENT_FOLDER_ID = "1--qhpO7fr5q4q7x0pRxdiETcFyBsNOGN"  # FOUND IN URL
@@ -46,6 +47,12 @@ def get_pending_tax_year():
     )
 
 
+def delete_tax_csv(output_csv):
+    file_path = Path(output_csv)
+    if file_path.exists():
+        file_path.unlink()
+
+
 def create_tax_csv(output_csv, filter_start_date, filter_end_date):
     # Dictionary to store the total amount for each month name
     monthly_totals = defaultdict(float)
@@ -65,8 +72,6 @@ def create_tax_csv(output_csv, filter_start_date, filter_end_date):
         # Sort by month name alphabetically
         for month, total in sorted(monthly_totals.items()):
             writer.writerow([total])
-
-    print(f"Summary saved to {output_csv}")
 
 
 def add_students(students):
@@ -293,6 +298,7 @@ def prepare_tax_return():
         drive_manager.upload_file(
             TAX_RETURNS_FOLDER_ID, csv_file_path, tax_year, mimetype="text/csv"
         )
+        delete_tax_csv(csv_file_path)
         return redirect(url_for("index"))
 
 
