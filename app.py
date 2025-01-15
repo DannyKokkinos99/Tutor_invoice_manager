@@ -14,6 +14,7 @@ import pdfplumber
 import csv
 from collections import defaultdict
 from datetime import datetime
+from sqlalchemy import and_
 
 GOOGLE_DOC = "1pnp-XjBkuIb0LnspKW3d2uw2v6l7Byxxfuwgy5b0Oak"
 PARENT_FOLDER_ID = "1--qhpO7fr5q4q7x0pRxdiETcFyBsNOGN"  # FOUND IN URL
@@ -36,15 +37,21 @@ load_dotenv()  # Loads env variables
 
 
 def get_pending_tax_year():
-    current_year = int(datetime.now().year)
+    current_year = int(datetime.now().year) - 1
     previous_year = current_year - 1
-    return f"tax_return_{previous_year}_{current_year}.csv", f"{previous_year}-04-05"
+    return (
+        f"tax_return_{previous_year}_{current_year}.csv",
+        f"{previous_year}-04-05",
+        f"{current_year}-04-05",
+    )
 
 
-def create_tax_csv(output_csv, filter_date):
+def create_tax_csv(output_csv, filter_start_date, filter_end_date):
     # Dictionary to store the total amount for each month name
     monthly_totals = defaultdict(float)
-    invoices = Invoice.query.filter(Invoice.date > filter_date).all()
+    invoices = Invoice.query.filter(
+        and_(Invoice.date > filter_start_date, Invoice.date < filter_end_date)
+    ).all()
     # Process each invoice
     for invoice in invoices:
         # Extract the month name from the date
@@ -54,10 +61,10 @@ def create_tax_csv(output_csv, filter_date):
     # Write the results to a CSV file
     with open(output_csv, mode="w", newline="") as csvfile:
         writer = csv.writer(csvfile)
-        writer.writerow(["Month", "Total Amount"])  # Write the header
+        writer.writerow(["Personal"])  # Write the header
         # Sort by month name alphabetically
         for month, total in sorted(monthly_totals.items()):
-            writer.writerow([month, total])
+            writer.writerow([total])
 
     print(f"Summary saved to {output_csv}")
 
@@ -280,10 +287,12 @@ def update_database():
 @app.route("/prepare_tax_return", methods=["GET"])
 def prepare_tax_return():
     if request.method == "GET":
-        tax_year, filter_date = get_pending_tax_year()
+        tax_year, start_date, end_date = get_pending_tax_year()
         csv_file_path = os.path.join(TAX_PARENT_FOLDER, tax_year)
-        create_tax_csv(csv_file_path, filter_date)
-        drive_manager.upload_file(TAX_RETURNS_FOLDER_ID, csv_file_path, tax_year)
+        create_tax_csv(csv_file_path, start_date, end_date)
+        drive_manager.upload_file(
+            TAX_RETURNS_FOLDER_ID, csv_file_path, tax_year, mimetype="text/csv"
+        )
         return redirect(url_for("index"))
 
 
