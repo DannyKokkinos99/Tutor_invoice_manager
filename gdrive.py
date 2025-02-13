@@ -1,10 +1,13 @@
-# pylint: disable= C0116,C0114,C0115, E1101
+# pylint: disable= C0116,C0114,C0115,W123
 from googleapiclient.http import MediaFileUpload, MediaIoBaseDownload
 from googleapiclient.discovery import build
 from google.oauth2 import service_account
+from utility.logger import get_logger
 import os
 import io
 import re
+
+logger = get_logger(__name__)
 
 
 class Gdrive:
@@ -194,9 +197,12 @@ class Gdrive:
         students = []
         for block in student_blocks:
             lines = block.splitlines()
-            if (
-                len(lines) >= 8
-            ):  # Ensure there are enough lines to form a student record
+            print(len(lines))
+            if len(lines) < 8 or len(lines) > 8:
+                logger.warning(
+                    f"Possible issue with details for student: {lines[0].strip()}"
+                )
+            if len(lines) >= 8:
                 student = {
                     "name": lines[0].strip(),
                     "surname": lines[1].strip(),
