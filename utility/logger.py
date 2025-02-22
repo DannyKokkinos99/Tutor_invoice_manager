@@ -14,13 +14,4 @@ def get_logger(name):
         console_handler.setFormatter(logging.Formatter("%(levelname)s: %(message)s"))
         logger.addHandler(console_handler)
 
-        # file_handler = logging.FileHandler("app.log")
-        # file_handler.setLevel(logging.DEBUG)
-        # file_handler.setFormatter(
-        #     logging.Formatter(
-        #         "%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]"
-        #     )
-        # )
-        # logger.addHandler(file_handler)
-
     return logger
