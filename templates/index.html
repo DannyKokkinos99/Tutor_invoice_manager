@@ -14,7 +14,6 @@
       crossorigin="anonymous"
     ></script>
   </head>
-
   <body>
     <div
       class="bg-cover bg-center bg-no-repeat h-screen w-screen"
@@ -34,7 +33,7 @@
               id="get_total_students"
               hx-get="/api/get_total_students"
               hx-trigger="load"
-              hx-swap="innerHTML"
+              hx-swap="innerHTML settle:50"
             ></p>
             <p class="text-white flex justify-center">students</p>
           </div>
@@ -45,7 +44,7 @@
               id="get_total_hours"
               hx-get="/api/get_total_hours"
               hx-trigger="load"
-              hx-swap="innerHTML"
+              hx-swap="innerHTML settle:50"
             ></p>
             <p class="text-white flex justify-center">hours of lessons</p>
           </div>
@@ -58,15 +57,14 @@
               id="get_total_paid"
               hx-get="/api/get_total_paid"
               hx-trigger="load"
-              hx-swap="innerHTML"
+              hx-swap="innerHTML settle:50"
             ></p>
             <p class="text-white flex justify-center">for work done</p>
           </div>
         </div>
-
-    <section class="flex items-center justify-center h-screen">
-    <!-- Button container with background rectangle -->
-        <div
+        <section class="flex items-center justify-center h-screen">
+          <!-- Button container with background rectangle -->
+          <div
             class="bg-black bg-opacity-50 p-8 rounded-2xl w-80 flex flex-col items-center justify-center"
           >
             <button
@@ -86,6 +84,7 @@
             <button
               hx-get="/edit-student"
               hx-target="#main"
+              onclick="loadEditStudent()"
               class="bg-black hover:bg-gray-400 text-white hover:text-gray-800 rounded-2xl px-6 py-3 w-48 mb-6 border-2 border-white"
             >
               Edit Student
@@ -112,8 +111,18 @@
               Prepare taxes
             </button>
           </div>
-        </div>
+        </section>
       </div>
-    </section>
+    </div>
+    <script>
+      function loadEditStudent() {
+        setTimeout(() => {
+          htmx.ajax("GET", "/edit-student", {
+            target: "#main",
+            swap: "innerHTML",
+          });
+        }, 50); // 50ms delay
+      }
+    </script>
   </body>
 </html>
