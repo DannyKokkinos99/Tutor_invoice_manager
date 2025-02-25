@@ -1,27 +1,12 @@
-# pylint: disable= C0116,C0114,C0115
 import secrets
 import os
 from flask import Flask
 from dotenv import load_dotenv
 from config import SQLALCHEMY_DATABASE_URI, SQLALCHEMY_TRACK_MODIFICATIONS
-from gdrive import Gdrive
 from emailer import Emailer
 from extensions import db
+from models import *
 from routes import app_routes
-
-
-GOOGLE_DOC = "1pnp-XjBkuIb0LnspKW3d2uw2v6l7Byxxfuwgy5b0Oak"
-PARENT_FOLDER_ID = "1--qhpO7fr5q4q7x0pRxdiETcFyBsNOGN"  # FOUND IN URL
-TAX_RETURNS_FOLDER_ID = "1bpqM7ZChtiegKoJvV1MLpwIZ2PuKSLtv"
-SERVICE_ACCOUNT_FILE = (
-    "service_account.json"  # GIVE FOLDER PERMISSIONS TO SERVICE ACCOUNT
-)
-SCOPE = [
-    "https://www.googleapis.com/auth/drive",
-    "https://www.googleapis.com/auth/drive.readonly",
-]  # do not change this
-LOCAL_PARENT_FOLDER = "Invoices"
-TAX_PARENT_FOLDER = "Invoices"
 
 load_dotenv()
 
