@@ -8,10 +8,10 @@ from sqlalchemy import and_
 import pdfplumber
 from extensions import db
 from models import Student, Invoice
-from utility.logger import get_logger
+from utility.logger import logger
 
 
-logger = get_logger(__name__)
+# logger = get_logger(__name__)
 
 
 def get_pending_tax_year():
@@ -53,6 +53,7 @@ def create_tax_csv(output_csv, filter_start_date, filter_end_date):
 
 def add_students(students):
     db.session.query(Student).delete()
+    logger.info("Adding students to database")
     for student in students:
         new_student = Student(
             name=student["name"],
@@ -65,9 +66,7 @@ def add_students(students):
         )
         db.session.add(new_student)
         db.session.commit()
-        logger.info(
-            f"New student added - Name: {student["name"]} | Surname: {student["surname"]}"
-        )
+        logger.info(f"  {student["name"]} {student["surname"]} ✅")
 
 
 def get_student_id(student_name):
@@ -91,9 +90,13 @@ def read_field_from_pdf(file_path, keyword):
 def update_local_database(parent_folder, folder_names):
     db.session.query(Invoice).delete()
     db.session.commit()
+    logger.info("Adding invoices to database")
     for folder_name in folder_names:
+        logger.info(f"   Adding invoices for {folder_name}")
+        count = 0
         folder_path = os.path.join(parent_folder, folder_name)
         for file_name in os.listdir(folder_path):
+            count += 1
             file_path = os.path.join(folder_path, file_name)
             total_price = float(read_field_from_pdf(file_path, "£").split("£")[2])
             hours = float(
@@ -109,7 +112,7 @@ def update_local_database(parent_folder, folder_names):
             month = split_wrong_date_format[1]
             year = split_wrong_date_format[2]
             correct_date_format = f"{year}-{month}-{day}"
-            logger.info(f"New Invoice for Student: {student_id} | Total: {total_price}")
+            logger.info(f"     Invoice-{count} ✅")
             # Add all invoices to local db
             new_invoice = Invoice(
                 hours=hours,

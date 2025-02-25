@@ -7,7 +7,6 @@ from config import SQLALCHEMY_DATABASE_URI, SQLALCHEMY_TRACK_MODIFICATIONS
 from gdrive import Gdrive
 from emailer import Emailer
 from extensions import db
-from utility.logger import get_logger
 from routes import app_routes
 
 
@@ -24,11 +23,7 @@ SCOPE = [
 LOCAL_PARENT_FOLDER = "Invoices"
 TAX_PARENT_FOLDER = "Invoices"
 
-
-drive_manager = Gdrive(SERVICE_ACCOUNT_FILE, SCOPE)
-email_manager = Emailer(os.getenv("EMAIL"), os.getenv("APP_PASSWORD"))
-logger = get_logger(__name__)
-load_dotenv()  # Loads env variables
+load_dotenv()
 
 
 def create_app():
@@ -48,4 +43,4 @@ def create_app():
 app = create_app()
 
 if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0", port=5000)
+    app.run(host="0.0.0.0", port=5000)

@@ -5,9 +5,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
 from email import encoders
-from utility.logger import get_logger
-
-logger = get_logger(__name__)
+from utility.logger import logger
 
 
 class Emailer:
@@ -56,7 +54,7 @@ class Emailer:
             # Send email
             text = msg.as_string()
             server.sendmail(self.sender_email, recipient.email, text)
-            logger.critical("Email successfully sent!")
+            logger.info("Email sent ✅")
 
             # Terminate the SMTP session and close the connection
             server.quit()

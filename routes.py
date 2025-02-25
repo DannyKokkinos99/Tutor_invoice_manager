@@ -9,13 +9,14 @@ from flask import (
     request,
     send_file,
     Blueprint,
+    jsonify,
 )
 from models import db, Student, Invoice
 from forms import AddStudentForm, EditStudentForm, RemoveStudentForm, CreateInvoiceForm
 from pdf import InvoicePDF
 from gdrive import Gdrive
 from emailer import Emailer
-from utility.logger import get_logger
+from utility.logger import logger
 from services import (
     update_local_database,
     add_students,
@@ -41,7 +42,7 @@ TAX_PARENT_FOLDER = "Invoices"
 
 drive_manager = Gdrive(SERVICE_ACCOUNT_FILE, SCOPE)
 email_manager = Emailer(os.getenv("EMAIL"), os.getenv("APP_PASSWORD"))
-logger = get_logger(__name__)
+
 load_dotenv()
 app_routes = Blueprint("app_routes", __name__)
 
@@ -210,13 +211,12 @@ def invoice_send():
     new_invoice = Invoice(hours=hours, total=total, student_id=student_id, date=date)
     db.session.add(new_invoice)
     db.session.commit()
-    logger.critical("Invoice entry created")
+    logger.info("Invoice created ✅")
     # Save Invoice to google drive
     folder_id = drive_manager.ensure_folder_exists(PARENT_FOLDER_ID, student.name)
     file_path = f"Invoices/{student.name}/Invoice-{student.invoice_count}.pdf"
     file_name = f"Invoice-{student.invoice_count}.pdf"
     drive_manager.upload_file(folder_id, file_path, file_name)
-    logger.critical("File uploaded to google drive")
     return render_template("index.html")
 
 

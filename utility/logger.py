@@ -1,8 +1,10 @@
 # pylint: disable= C0116,C0114,C0115,W0612,E1133,E0401
 import logging
+import sys
+import time
 
 
-def get_logger(name):
+def init_logger(name):
     logger = logging.getLogger(name)
     logger.setLevel(logging.DEBUG)
 
@@ -15,3 +17,18 @@ def get_logger(name):
         logger.addHandler(console_handler)
 
     return logger
+
+
+logger = init_logger(__name__)
+
+
+def loading_animation(stop_signal):
+    """Displays a loading animation until stop_event is set."""
+    while not stop_signal.is_set():
+        for dots in [".", "..", "..."]:
+            sys.stdout.write(f"\rLoading{dots}   ")  # Overwrite the same line
+            sys.stdout.flush()
+            time.sleep(0.5)
+            if stop_signal.is_set():
+                break  # Exit the loop when stop event is set
+    sys.stdout.write("\rDone!      \n")  # Clear loading message

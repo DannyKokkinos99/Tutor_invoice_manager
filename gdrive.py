@@ -2,12 +2,10 @@
 from googleapiclient.http import MediaFileUpload, MediaIoBaseDownload
 from googleapiclient.discovery import build
 from google.oauth2 import service_account
-from utility.logger import get_logger
+from utility.logger import logger
 import os
 import io
 import re
-
-logger = get_logger(__name__)
 
 
 class Gdrive:
@@ -19,11 +17,20 @@ class Gdrive:
         )
         self.service = build("drive", "v3", credentials=self.creds)
         self.docs_service = build("docs", "v1", credentials=self.creds)
-        print("Google drive handler created")
+        logger.info("Google drive handler created")
 
     def upload_file(
         self, parent_folder_id, folder_name, file_name, mimetype="application/pdf"
     ):
+        # Search for existing file with the same name in the target folder
+        query = f"name = '{file_name}' and '{parent_folder_id}' in parents and trashed = false"
+        results = self.service.files().list(q=query, fields="files(id, name)").execute()
+        existing_files = results.get("files", [])
+
+        if existing_files:
+            logger.warning(f"File {file_name} already exists ⚠️")
+            return  # Skip upload if file exists
+
         # Create a MediaFileUpload object for the file
         media = MediaFileUpload(folder_name, mimetype=mimetype, resumable=True)
 
@@ -40,31 +47,15 @@ class Gdrive:
             .create(body=file_metadata, media_body=media, fields="id")
             .execute()
         )
-        print(f"File uploaded: {file}")
+
+        logger.info(f"{file_name} uploaded to Google Drive ✅")
 
     def print_about(self):
         about = self.service.about().get(fields="user").execute()
         user_info = about.get("user", {})
-        print(
+        logger.info(
             f"Authenticated as: {user_info.get('displayName')} ({user_info.get('emailAddress')})"
         )
-
-    def list_files(self, folder_id=None):
-        # Call the Drive v3 API
-        query = f"'{folder_id}' in parents" if folder_id else None
-        results = (
-            self.service.files()
-            .list(q=query, pageSize=100, fields="nextPageToken, files(id, name)")
-            .execute()
-        )
-        items = results.get("files", [])
-
-        if not items:
-            print("No files found.")
-        else:
-            print("Files:")
-            for item in items:
-                print(f'{item["name"]} ({item["id"]})')
 
     def file_count(self, folder_id):
         query = f"'{folder_id}' in parents" if folder_id else None
@@ -75,7 +66,6 @@ class Gdrive:
         )
         items = results.get("files", [])
         num_items = len(items)
-        print(f"{num_items} found in folder {folder_id}")
         return num_items
 
     def folder_exists(self, parent_folder_id, folder_name):
@@ -96,7 +86,7 @@ class Gdrive:
                 # Folder not found
                 return None
         except Exception as e:
-            print(f"An error occurred: {e}")
+            logger.error(f"An error occurred: {e}")
             return None
 
     def create_folder(self, parent_folder_id, folder_name):
@@ -111,14 +101,12 @@ class Gdrive:
         folder = (
             self.service.files().create(body=folder_metadata, fields="id").execute()
         )
-        print(f'Created folder: {folder_name} with ID: {folder.get("id")}')
+        logger.info(f'Created folder: {folder_name} with ID: {folder.get("id")}')
         return folder.get("id")
 
     def ensure_folder_exists(self, parent_folder_id, folder_name):
-        print(f"Checking if {folder_name} folder exists")
         folder_id = self.folder_exists(parent_folder_id, folder_name)
         if folder_id:
-            print(f'Folder "{folder_name}" already exists with ID: {folder_id}')
             return folder_id
         else:
             return self.create_folder(parent_folder_id, folder_name)
@@ -130,6 +118,7 @@ class Gdrive:
         folder_names = [folder["name"] for folder in folders]
         folder_ids = [folder["id"] for folder in folders]
         for folder_name, folder_id in zip(folder_names, folder_ids):
+            logger.info(f"Downloading invoices for student - {folder_name}")
             folder_path = os.path.join(parent_path, folder_name)
             self.download_folder(folder_id, folder_path)
         return folder_names
@@ -166,14 +155,13 @@ class Gdrive:
                 done = False
                 while not done:
                     status, done = downloader.next_chunk()
-                    print(f"Download {file_name}: {int(status.progress() * 100)}%.")
 
                 # Write the downloaded content to the local file
                 with open(file_path, "wb") as f:
                     file_data.seek(0)
                     f.write(file_data.read())
 
-                print(f"File {file_name} downloaded successfully.")
+                logger.info(f"  {file_name} ✅")
 
     def get_students_from_gdoc(self, document_id):
         """Reads the content of a Google Doc and parses student information."""
@@ -197,7 +185,6 @@ class Gdrive:
         students = []
         for block in student_blocks:
             lines = block.splitlines()
-            print(len(lines))
             if len(lines) < 8 or len(lines) > 8:
                 logger.warning(
                     f"Possible issue with details for student: {lines[0].strip()}"
