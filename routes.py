@@ -205,7 +205,10 @@ def invoice_send():
     total = float(request.args.get("total"))
     student = Student.query.get(student_id)
     # Send email
-    email_manager.send_email("email_template.txt", student)
+    try:
+        email_manager.send_email("email_template.txt", student)
+    except Exception as e:
+        logger.error(f"Email sending failed: {e}")
     # Create new invoice database entry
     date = datetime.now().strftime("%Y-%m-%d")
     new_invoice = Invoice(hours=hours, total=total, student_id=student_id, date=date)

@@ -3,7 +3,6 @@ import os
 from flask import Flask
 from dotenv import load_dotenv
 from config import SQLALCHEMY_DATABASE_URI, SQLALCHEMY_TRACK_MODIFICATIONS
-from emailer import Emailer
 from extensions import db
 from models import *
 from routes import app_routes
@@ -28,4 +27,4 @@ def create_app():
 app = create_app()
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+    app.run(debug=True, host="0.0.0.0", port=5000)
